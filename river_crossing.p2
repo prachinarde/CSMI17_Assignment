@@ -1,0 +1,52 @@
+% Define the weights of individuals
+weight(man, 80).
+weight(woman, 80).
+weight(child1, 30).
+weight(child2, 30).
+
+% Initial state where everyone is on the left bank
+initial_state([left, left, left, left]).
+
+% Goal state where everyone is on the right bank
+goal_state([right, right, right, right]).
+
+% Move one person from left to right
+move([left, B, C, D], [right, B, C, D], man) :- weight(man, W1), W1 =< 100.
+move([A, left, C, D], [A, right, C, D], woman) :- weight(woman, W2), W2 =< 100.
+move([A, B, left, D], [A, B, right, D], child1) :- weight(child1, W3), W3 =< 100.
+move([A, B, C, left], [A, B, C, right], child2) :- weight(child2, W4), W4 =< 100.
+
+% Move two people from left to right (ensure total weight <= 100kg)
+move([left, left, C, D], [right, right, C, D], man, woman) :-
+    weight(man, W1), weight(woman, W2), W is W1 + W2, W =< 100.
+move([left, B, left, D], [right, B, right, D], man, child1) :-
+    weight(man, W1), weight(child1, W3), W is W1 + W3, W =< 100.
+move([left, B, C, left], [right, B, C, right], man, child2) :-
+    weight(man, W1), weight(child2, W4), W is W1 + W4, W =< 100.
+move([A, left, left, D], [A, right, right, D], woman, child1) :-
+    weight(woman, W2), weight(child1, W3), W is W2 + W3, W =< 100.
+move([A, left, C, left], [A, right, C, right], woman, child2) :-
+    weight(woman, W2), weight(child2, W4), W is W2 + W4, W =< 100.
+move([A, B, left, left], [A, B, right, right], child1, child2) :-
+    weight(child1, W3), weight(child2, W4), W is W3 + W4, W =< 100.
+
+% River crossing logic to ensure everyone crosses successfully
+solve([right, right, right, right], []) :- 
+    write('Everyone has crossed the river successfully!'), nl.
+
+solve(State, [Move | RestOfMoves]) :-
+    move(State, NewState, Move),
+    solve(NewState, RestOfMoves).
+
+% To start the crossing
+start_crossing :- 
+    initial_state(InitialState),
+    goal_state(GoalState),
+    solve(InitialState, Moves),
+    print_moves(Moves).
+
+% Helper to print the sequence of moves
+print_moves([]).
+print_moves([Move | Rest]) :-
+    write('Move: '), write(Move), nl,
+    print_moves(Rest).
